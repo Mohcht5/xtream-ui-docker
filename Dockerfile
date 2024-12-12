@@ -1,20 +1,47 @@
-# تحديد الصورة الأساسية
-FROM python:3.9
+# استخدام صورة Ubuntu كأساس
+FROM ubuntu:20.04
 
-# نسخ كل الملفات من المجلد المحلي إلى الحاوية
-COPY . /app
+# تعيين البيئة لتفادي بعض التحذيرات
+ENV DEBIAN_FRONTEND=noninteractive
 
-# تحديد المسار للعمل داخل الحاوية
-WORKDIR /app
+# تحديث الحزم وتثبيت المتطلبات الأساسية
+RUN apt-get update -y && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+    python3 \
+    python3-pip \
+    curl \
+    git \
+    mysql-server \
+    python3-dev \
+    build-essential \
+    libssl-dev \
+    libmysqlclient-dev \
+    sudo \
+    unzip \
+    lsb-release \
+    wget
 
-# تثبيت الحزم المطلوبة من ملف requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# تثبيت الأدوات الضرورية مثل curl و wget
+RUN apt-get install -y \
+    curl \
+    wget \
+    unzip
 
-# إعطاء صلاحية تنفيذ للسكربت install.py
-RUN chmod +x /app/install.py
+# تحميل مستودع Xtream UI من GitHub
+RUN git clone https://github.com/Mohcht5/xtream-ui-docker.git /opt/xtreamui
 
-# تنفيذ السكربت install.py
-RUN python /app/install.py
+# الانتقال إلى مجلد Xtream UI
+WORKDIR /opt/xtreamui
 
-# تحديد المنفذ الذي ستستمع عليه الحاوية (إذا كان لديك تطبيق يستمع هنا)
-EXPOSE 5000
+# تثبيت الاعتماديات باستخدام pip
+RUN pip3 install -r requirements.txt
+
+# تشغيل السكربت التثبيت
+RUN python3 install.py
+
+# فتح المنفذ الذي يستخدمه Xtream UI
+EXPOSE 80
+
+# تعيين نقطة دخول الحاوية
+CMD ["python3", "start.py"]
