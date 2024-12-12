@@ -1,11 +1,23 @@
-FROM ubuntu:18.04
+# استخدم صورة أساسية من Python
+FROM python:3.8-slim
 
-#RUN useradd -ms /bin/bash xtreamcodes
+# تعيين الدليل العامل في الحاوية
+WORKDIR /app
 
-#USER xtreamcodes
-#WORKDIR /home/xtreamcodes
+# نسخ الملفات المحلية إلى الحاوية
+COPY . /app
 
-RUN apt-get update && apt-get upgrade -y && apt-get install libxslt1-dev libcurl3 libgeoip-dev python wget -y
-ADD install.py
-RUN python3 install itertools
-RUN python install.py
+# تثبيت المتطلبات
+RUN pip install --no-cache-dir -r requirements.txt
+
+# إضافة ملف install.py
+ADD install.py /app/install.py
+
+# تنفيذ السكربت
+RUN python /app/install.py
+
+# تحديد المنفذ الذي ستستمع عليه الحاوية
+EXPOSE 25500
+
+# الأمر الأساسي لتشغيل التطبيق
+CMD ["python", "app.py"]
